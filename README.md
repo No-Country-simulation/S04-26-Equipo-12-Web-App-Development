@@ -1,6 +1,8 @@
-# S04-26-Equipo-12-Web-App-Development
+# OpsCore - Operations Consulting
 
-## Development Team
+OpsCore is a web-based incident management system designed to digitize the operations of an industrial plant with 400 operators. The platform allows for reporting failures from any device, real-time tracking of resolution status, and analyzing recurring root causes to reduce the frequency of critical incidents.
+
+## Development Team S04-26-Equipo-12-Web-App-Development
 
 ## Project Manager
 
