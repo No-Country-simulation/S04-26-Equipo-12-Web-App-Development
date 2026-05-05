@@ -1,1 +1,0 @@
-# TODO: Complete with technology and install instructions
