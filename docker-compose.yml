@@ -1,0 +1,45 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: opscore_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: opscore_db
+      POSTGRES_USER: opscore_user
+      POSTGRES_PASSWORD: opscore_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - opscore_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U opscore_user -d opscore_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: opscore_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      SECRET_KEY: dev-secret-key
+      DEBUG: "True"
+      DB_NAME: opscore_db
+      DB_USER: opscore_user
+      DB_PASSWORD: opscore_password
+      DB_HOST: db
+      DB_PORT: 5432
+      ALLOWED_HOSTS: localhost,127.0.0.1,backend
+      CORS_ALLOWED_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      DJANGO_SETTINGS_MODULE: config.settings.dev
+    depends_on:
+      - db
+
+volumes:
+  opscore_pg_data:
