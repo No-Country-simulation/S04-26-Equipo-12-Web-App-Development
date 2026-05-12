@@ -1,0 +1,65 @@
+[
+  {
+    "model": "incidents.area",
+    "pk": 1,
+    "fields": {
+      "name": "Línea de Corte",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "incidents.area",
+    "pk": 2,
+    "fields": {
+      "name": "Ensamblaje",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "incidents.incidenttype",
+    "pk": 1,
+    "fields": {
+      "name": "Falla mecánica",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "incidents.incidenttype",
+    "pk": 2,
+    "fields": {
+      "name": "Accidente",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "incidents.incidenttype",
+    "pk": 3,
+    "fields": {
+      "name": "Desviación de calidad",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "incidents.incidenttype",
+    "pk": 4,
+    "fields": {
+      "name": "Falla eléctrica",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  },
+  {
+    "model": "incidents.incidenttype",
+    "pk": 5,
+    "fields": {
+      "name": "Falla de software",
+      "is_active": true,
+      "created_at": "2026-05-12T00:00:00Z"
+    }
+  }
+]
