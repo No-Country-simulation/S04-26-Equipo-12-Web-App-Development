@@ -98,15 +98,3 @@ OpsCore is a web-based incident management system designed to digitize the opera
 [![github](https://img.shields.io/badge/github-grey?style=flat&logo=github&logoColor=white)](https://github.com)
 [![mail](https://img.shields.io/badge/Gmail-D14836?style=flat&logo=gmail&logoColor=white)](mailto:example@mail.com)
 
-<hr size="8px"/>
-
-## QA tester
-
-<img src="profile_images/default_picture.png" alt="Maria Nieto" height="100px"/>
-
-#### - _Maria Nieto_
-
-[![portfolio](https://img.shields.io/badge/my_portfolio-grey?style=flat&logo=ko-fi&logoColor=white)]()
-[![linkedin](https://img.shields.io/badge/linkedin-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com)
-[![github](https://img.shields.io/badge/github-grey?style=flat&logo=github&logoColor=white)](https://github.com)
-[![mail](https://img.shields.io/badge/Gmail-D14836?style=flat&logo=gmail&logoColor=white)](mailto:example@mail.com)
