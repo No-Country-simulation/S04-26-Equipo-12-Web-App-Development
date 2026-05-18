@@ -3,7 +3,7 @@ from django.db import models
 from ..incidents.models import Incident
 from ..users.models import CustomUser
 
-class Log(models.Model):
+class IncidentLog(models.Model):
     ACTION_CREATE = 'CREATE'
     ACTION_ASSINGN = 'ASSIGN'
     ACTION_REASSING = 'REASSIGN'
@@ -28,7 +28,7 @@ class Log(models.Model):
 
     user = models.ForeignKey(
         CustomUser,
-        related_name= 'logs',
+        related_name= 'incident_logs',
         on_delete= models.PROTECT
     )
 
