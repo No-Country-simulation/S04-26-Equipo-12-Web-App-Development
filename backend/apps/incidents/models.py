@@ -4,6 +4,7 @@ from django.db import models
 
 class Area(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -16,6 +17,7 @@ class Area(models.Model):
 
 class IncidentType(models.Model):
     name = models.CharField(max_length=100, unique=True)
+    description = models.CharField(max_length=255, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -80,7 +82,13 @@ class Incident(models.Model):
         related_name='reported_incidents',
         on_delete=models.PROTECT
     )
-
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="assigned_incidents",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+    )
     title = models.CharField(max_length=200)
     description = models.TextField()
     status = models.CharField(
@@ -94,6 +102,7 @@ class Incident(models.Model):
         default=Priority.MEDIUM
     )
     root_cause = models.TextField(blank=True)
+    solution = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
@@ -104,6 +113,14 @@ class Incident(models.Model):
 
     def __str__(self):
         return f'[{self.status}] {self.title}'
+
+    @property
+    def resolution_time_minutes(self):
+        if not self.resolved_at:
+            return None
+
+        resolution_time = self.resolved_at - self.created_at
+        return int(resolution_time.total_seconds() / 60)
 
 
 class IncidentAssignment(models.Model):
