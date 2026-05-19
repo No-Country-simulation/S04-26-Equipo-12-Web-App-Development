@@ -168,7 +168,7 @@ docker compose exec backend python manage.py createsuperuser
 Datos sugeridos para desarrollo:
 
 ```txt
-Username: opscore_admin
+First name: opscore_admin
 Email: admin@gmail.com(Email a preferencia)
 Password: opscore_password(Ejemplo)
 ```
