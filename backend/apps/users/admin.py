@@ -4,14 +4,13 @@ from .models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
-    fieldsets = UserAdmin.fieldsets + (
-        ('OpsCore Info', {
-            'fields': ('role', 'phone', 'employee_code')
+    list_display  = ('email', 'get_full_name', 'role', 'area', 'is_active')
+    list_filter   = ('role', 'is_active', 'area')
+    search_fields = ('email', 'first_name', 'last_name', 'employee_code')
+    ordering      = ('last_name', 'first_name')
+
+    fieldsets = tuple(UserAdmin.fieldsets) + (
+        ('Additional Information', {
+            'fields': ('area', 'role', 'phone', 'employee_code')
         }),
-    )
-
-    list_display = (
-        'username', 'email', 'first_name', 'last_name', 'role', 'is_active'
-    )
-
-    list_filter = ('role', 'is_active', 'is_staff')
+    ) # type: ignore
