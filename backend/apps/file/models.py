@@ -1,7 +1,20 @@
 from django.db import models
 from services import incident_file_upload_path
 
+FILE_IMAGE_MAX_MB  = 5
+FILE_VIDEO_MAX_MB  = 200
+ 
+FILE_IMAGE_MAX_BYTES = FILE_IMAGE_MAX_MB * 1024 * 1024
+FILE_VIDEO_MAX_BYTES = FILE_VIDEO_MAX_MB * 1024 * 1024
+ 
+FILE_ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+FILE_ALLOWED_VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo']
+ 
+FILE_ALLOWED_TYPES = FILE_ALLOWED_IMAGE_TYPES + FILE_ALLOWED_VIDEO_TYPES
+
+
 class File(models.Model):
+
     FILE_TYPE_IMAGE = 'image'
     FILE_TYPE_VIDEO = 'video'
  
