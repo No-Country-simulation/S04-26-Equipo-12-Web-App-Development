@@ -12,11 +12,11 @@ class IncidentLog(models.Model):
     ACTION_CLOSE = 'CLOSE'
 
     ACTION_CHOICES = [
-        (ACTION_CREATE, 'creacion')
-        (ACTION_ASSINGN, 'asignacion')
-        (ACTION_REASSING, 'reasignacion')
-        (ACTION_STATUS_CHANGE, 'cambio de estado')
-        (ACTION_UPDATE, 'actualizacion')
+        (ACTION_CREATE, 'creacion'),
+        (ACTION_ASSINGN, 'asignacion'),
+        (ACTION_REASSING, 'reasignacion'),
+        (ACTION_STATUS_CHANGE, 'cambio de estado'),
+        (ACTION_UPDATE, 'actualizacion'),
         (ACTION_CLOSE, 'cierre')
     ]
 
