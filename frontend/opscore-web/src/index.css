@@ -48,6 +48,7 @@
 }
 
 @theme inline {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --color-primary: var(--primary);
   --color-primary-focus: var(--primary-focus);
   --color-primary-fixed: var(--primary-fixed);

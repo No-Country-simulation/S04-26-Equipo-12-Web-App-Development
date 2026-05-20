@@ -1,4 +1,5 @@
 import { type ButtonHTMLAttributes } from 'react'
+import { type LucideIcon } from 'lucide-react'
 import { cn } from '../../../utils/cn'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -9,6 +10,8 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   size?: Size
   loading?: boolean
   fullWidth?: boolean
+  leftIcon?: LucideIcon
+  rightIcon?: LucideIcon
 }
 
 const variantStyles: Record<Variant, string> = {
@@ -24,16 +27,27 @@ const sizeStyles: Record<Size, string> = {
   lg: 'px-6 py-3 text-base gap-2',
 }
 
+const iconSize: Record<Size, number> = {
+  sm: 14,
+  md: 16,
+  lg: 18,
+}
+
 export function Button({
   variant = 'primary',
   size = 'md',
   loading = false,
   fullWidth = false,
+  leftIcon,
+  rightIcon,
   disabled,
   className,
   children,
   ...props
 }: ButtonProps) {
+  const LeftIcon = leftIcon
+  const RightIcon = rightIcon
+
   return (
     <button
       disabled={disabled || loading}
@@ -52,7 +66,9 @@ export function Button({
       {loading && (
         <span className="size-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
       )}
+      {!loading && LeftIcon && <LeftIcon size={iconSize[size]} className="shrink-0" />}
       {children}
+      {RightIcon && <RightIcon size={iconSize[size]} className="shrink-0" />}
     </button>
   )
 }
