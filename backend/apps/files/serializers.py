@@ -13,7 +13,7 @@ from apps.files.models import (
 class FileUploadSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        field = ['file']
+        fields = ['file']
 
     def validate_file(self, file):
         mime_type = file.content_type
