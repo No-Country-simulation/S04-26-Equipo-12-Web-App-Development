@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.incidents.apps.IncidentsConfig',
     'apps.analytics.apps.AnalyticsConfig',
+    'apps.files.apps.FilesConfig',
+    'apps.logs.apps.LogsConfig',
 ]
 
 MIDDLEWARE = [
@@ -116,5 +118,8 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = 'static/'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

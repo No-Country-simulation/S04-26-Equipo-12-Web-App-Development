@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class IncidentsLogsConfig(AppConfig):
-    name = 'apps.incidents_logs'
-    label = 'incidents_logs'
+class LogsConfig(AppConfig):
+    name = 'apps.logs'
+    label = 'logs'
