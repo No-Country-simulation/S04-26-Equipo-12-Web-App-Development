@@ -12,7 +12,7 @@ interface FormFieldProps {
   className?: string
 }
 
-export function FormField({ label, htmlFor, required, error, hint, children, className }: FormFieldProps) {
+export function FormField({ label, htmlFor, required = false, error, hint, children, className }: FormFieldProps) {
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
       <Label htmlFor={htmlFor} required={required}>
