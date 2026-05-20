@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Incident
+from core.permissions import IsOperator
 from .serializers import (
     IncidentCreateSerializer,
     IncidentDetailSerializer,
@@ -55,6 +56,12 @@ class IncidentViewSet(ModelViewSet):
         "options",
     ]
 
+    def get_permissions(self):
+        if self.action == "create":
+            return [IsAuthenticated(), IsOperator()]
+
+        return [IsAuthenticated()]
+
     def get_queryset(self):
         queryset = super().get_queryset()
 
@@ -70,4 +77,7 @@ class IncidentViewSet(ModelViewSet):
         return IncidentDetailSerializer
 
     def perform_create(self, serializer):
-        serializer.save(reported_by=self.request.user)
+        serializer.save(
+            reported_by=self.request.user,
+            status=Incident.Status.OPEN,
+            )
