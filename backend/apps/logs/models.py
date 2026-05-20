@@ -22,13 +22,13 @@ class IncidentLog(models.Model):
 
     incident = models.ForeignKey(
         Incident,
-        related_name= 'logs',
+        related_name= 'activity_logs',
         on_delete= models.CASCADE
     )
 
     user = models.ForeignKey(
         CustomUser,
-        related_name= 'incident_logs',
+        related_name= 'activity_logs',
         on_delete= models.PROTECT
     )
 

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from models import (
+from apps.files.models import (
     File,
     FILE_ALLOWED_IMAGE_TYPES,
     FILE_ALLOWED_VIDEO_TYPES,

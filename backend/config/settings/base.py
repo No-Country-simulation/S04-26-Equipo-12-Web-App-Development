@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     'apps.users.apps.UsersConfig',
     'apps.incidents.apps.IncidentsConfig',
     'apps.analytics.apps.AnalyticsConfig',
+    'apps.files.apps.FilesConfig',
+    'apps.logs.apps.LogsConfig',
 ]
 
 MIDDLEWARE = [

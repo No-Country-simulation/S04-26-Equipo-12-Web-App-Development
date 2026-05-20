@@ -1,5 +1,6 @@
+from django.conf import settings
 from django.db import models
-from services import incident_file_upload_path
+from apps.files.services import incident_file_upload_path
 
 FILE_IMAGE_MAX_MB  = 5
 FILE_VIDEO_MAX_MB  = 200
@@ -24,7 +25,7 @@ class File(models.Model):
     ]
 
     incident    = models.ForeignKey(
-        'Incident',
+        'incidents.Incident',
         related_name='files',
         on_delete=models.CASCADE,
     )
@@ -41,5 +42,5 @@ class File(models.Model):
     size_bytes= models.PositiveIntegerField()
     uploaded_at= models.DateTimeField(auto_now_add=True)
 
-class Meta:
-    ordering = ['-uploaded_at']
+    class Meta:
+        ordering = ['-uploaded_at']

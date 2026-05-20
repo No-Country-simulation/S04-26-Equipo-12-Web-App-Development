@@ -1,5 +1,6 @@
 from rest_framework_nested import routers
-from apps.incidents.views import IncidentViewSet, FileViewSet
+from apps.incidents.views import IncidentViewSet
+from apps.files.views import FileViewSet
  
 # router principal
 router = routers.DefaultRouter()

@@ -4,14 +4,17 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import ListModelMixin
  
-from apps.incidents.models import Incident, File
-from apps.incidents.serializers import FileUploadSerializer, FileDetailSerializer
-from core.permissions import IsAuthenticated
+from apps.incidents.models import Incident
+from apps.files.models import File
+from apps.files.serializers import FileUploadSerializer, FileDetailSerializer
+
+
+#from core.permissions import IsAuthenticated
 
 class FileViewSet(ListModelMixin, GenericViewSet):
 
     parser_classes  = [MultiPartParser, FormParser]
-    permission_classes = [IsAuthenticated]
+    #permission_classes = [IsAuthenticated]
  
     def get_queryset(self):
         return File.objects.filter(incident_id=self.kwargs['incident_pk'])
