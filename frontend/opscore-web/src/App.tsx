@@ -1,18 +1,25 @@
 import { BrowserRouter, Routes, Route } from "react-router";
-import { LoginPage } from "./pages/LoginPage";
-import { useTheme } from "./utils/useTheme";
-import { ThemeToggle } from "./components/atoms/ThemeToggle";
+import { 
+  LoginPage, 
+  DashboardPage, 
+  IncidentPage, 
+  ReportPage, 
+  UserPage
+} from "@/pages";
+import { useTheme } from "@/utils/useTheme";
+
 
 function App() {
   useTheme();
 
   return (
     <BrowserRouter>
-      <div className="fixed top-4 right-4 z-50">
-        <ThemeToggle />
-      </div>
       <Routes>
         <Route path="/" element={<LoginPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/incidents" element={<IncidentPage />} />
+        <Route path="/reports" element={<ReportPage />} />
+        <Route path="/users" element={<UserPage />} />
       </Routes>
     </BrowserRouter>
   );

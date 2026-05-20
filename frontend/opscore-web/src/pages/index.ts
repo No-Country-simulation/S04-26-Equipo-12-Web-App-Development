@@ -1,0 +1,5 @@
+export { DashboardPage } from "@/pages/DashboardPage"
+export { LoginPage } from "@/pages/LoginPage"
+export { IncidentPage } from "@/pages/IncidentPage"
+export { ReportPage } from "@/pages/ReportPage"
+export { UserPage } from "@/pages/UserPage"

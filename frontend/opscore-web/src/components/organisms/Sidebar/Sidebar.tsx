@@ -1,7 +1,7 @@
 import { LayoutDashboard, AlertCircle, BarChart2, Users } from 'lucide-react'
-import { NavItem } from '../../molecules'
-import { Avatar } from '../../atoms'
-import logo from '../../../assets/opscore_logo_transparent.png'
+import { NavItem } from '@/components/molecules'
+import { Avatar } from '@/components/atoms'
+import logo from '@/assets/opscore_logo.jpg'
 
 interface SidebarProps {
   userName: string
@@ -17,10 +17,10 @@ const navItems = [
 
 export function Sidebar({ userName, userRole }: SidebarProps) {
   return (
-    <aside className="flex h-full w-[200px] flex-col bg-surface-background border-r border-outline-variant">
+    <aside className="flex min-h-screen w-[200px] flex-col bg-surface-background border-r border-outline-variant">
       {/* Brand */}
       <div className="flex items-center gap-2 px-4 py-4 border-b border-outline-variant">
-        <img src={logo} alt="OpsCore" className="size-8 object-contain" />
+        <img src={logo} alt="OpsCore" className="w-8 h-8 object-contain rounded" />
         <div className="leading-tight">
           <p className="text-sm font-bold text-foreground tracking-wide">OPSCORE</p>
           <p className="text-[10px] text-surface-foreground">Operations Consulting</p>

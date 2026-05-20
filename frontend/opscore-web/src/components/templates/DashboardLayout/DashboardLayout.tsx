@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react'
-import { Sidebar } from '../../organisms'
-import { TopBar } from '../../organisms'
+import { Sidebar, TopBar } from '@/components/organisms'
+
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -21,9 +21,9 @@ export function DashboardLayout({
   topBarAction,
 }: DashboardLayoutProps) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div className="flex min-h-screen bg-background">
       <Sidebar userName={userName} userRole={userRole} />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="flex flex-1 flex-col">
         <TopBar title={pageTitle} action={topBarAction} />
         <main className="flex-1 overflow-y-auto px-6 py-5">
           {children}
