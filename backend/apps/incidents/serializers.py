@@ -72,6 +72,26 @@ class IncidentAssignSerializer(serializers.ModelSerializer):
         return user
 
 
+class IncidentStatusUpdateSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(
+        choices=[
+            Incident.Status.OPEN,
+            Incident.Status.IN_PROGRESS,
+            Incident.Status.CLOSED,
+        ]
+    )
+
+    def validate_status(self, value):
+        incident = self.context["incident"]
+
+        if incident.status == value:
+            raise serializers.ValidationError(
+                "El incidente ya se encuentra en ese estado."
+            )
+
+        return value
+
+
 class IncidentResolveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Resolution

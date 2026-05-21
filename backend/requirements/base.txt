@@ -9,3 +9,5 @@ django-cors-headers
 python-decouple
 psycopg[binary]
 drf-nested-routers
+drf-spectacular
+drf-spectacular-sidecar
