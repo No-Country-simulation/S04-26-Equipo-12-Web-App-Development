@@ -2,6 +2,7 @@ import { type LucideIcon } from 'lucide-react'
 import { cn } from '@/utils/cn'
 
 type StatTrend = 'up' | 'down' | 'neutral'
+type BadgeVariant = 'critical' | 'warning' | 'resolved' | 'in-progress' | 'neutral'
 
 interface StatCardProps {
   title: string
@@ -10,6 +11,7 @@ interface StatCardProps {
   delta?: string
   trend?: StatTrend
   alert?: boolean
+  badgeVariant?: BadgeVariant
   className?: string
 }
 
@@ -19,10 +21,10 @@ const trendStyles: Record<StatTrend, string> = {
   neutral: 'text-surface-foreground',
 }
 
-export function StatCard({ title, value, icon: Icon, delta, trend = 'neutral', alert = false, className }: StatCardProps) {
+export function StatCard({ title, value, icon: Icon, delta, trend = 'neutral', alert = false, badgeVariant = 'neutral', className }: StatCardProps) {
   return (
-    <div className={cn('flex flex-col gap-2 rounded-xl bg-surface-background p-4', alert && 'ring-2 ring-badge-critical/40', className)}>
-      <div className="flex items-center justify-between text-surface-foreground">
+    <div className={cn('flex flex-col gap-2 rounded bg-surface-background ring-2 ring-surface-foreground/40 p-4', alert && 'ring-badge-critical/40', className)}>
+      <div className={cn("flex items-center justify-between text-surface-foreground", badgeVariant !== 'neutral' && `text-badge-${badgeVariant}`)}>
         <span className="text-xs font-semibold uppercase tracking-wide">{title}</span>
         {Icon && <Icon size={16} />}
       </div>
