@@ -10,4 +10,9 @@ export default defineConfig({
     babel({ presets: [reactCompilerPreset()] }),
     tailwindcss(),
   ],
+  resolve: {
+    alias: {
+      '@': '/src',
+    },
+  },
 })
