@@ -1,5 +1,5 @@
-import { cn } from '../../../utils/cn'
-import type { BadgeVariant } from '../../../types'
+import { cn } from '@/utils/cn'
+import type { BadgeVariant } from '@/types'
 
 interface StatusCount {
   variant: BadgeVariant
