@@ -3,6 +3,60 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import CustomUser
 from typing import Any, cast
 
+class UserCreateSerializer(serializers.ModelSerializer):
+
+  password = serializers.CharField(write_only=True, min_length=8, max_length=30)
+
+  class Meta:
+    model  = CustomUser
+    fields = [
+            'first_name',
+            'last_name',
+            'email',
+            'password',
+            'role',
+            'area',
+            'phone',
+            'employee_code',
+        ]
+
+  def validate_role(self, value):
+        requesting_user = self.context['request'].user
+
+        # Un SUPERVISOR solo puede crear cuentas OPERATOR.
+        if requesting_user.is_supervisor and value != CustomUser.Role.OPERATOR:
+            raise serializers.ValidationError({
+              'role': 'SUPERVISOR_CANNOT_ASSIGN_HIGHER_ROLE'
+            })
+
+        # Un ADMIN puede crear OPERATOR, SUPERVISOR y MANAGER,
+        # pero no puede crear otro ADMIN.
+        if requesting_user.is_admin and value == CustomUser.Role.ADMIN:
+            raise serializers.ValidationError(
+                'No se puede crear un usuario con rol ADMIN.'
+            )
+
+        return value
+
+  def create(self, validated_data):
+        password = validated_data.pop('password')
+
+        validated_data['username'] = validated_data['email']
+
+        user = CustomUser(**validated_data)
+        user.set_password(password)
+        user.save()
+        return user
+
+class UserRoleUpdateSerializer(serializers.ModelSerializer):
+
+  role = serializers.ChoiceField(
+     choices=[
+        CustomUser.Role.OPERATOR,
+        CustomUser.Role.SUPERVISOR,
+     ]
+  )
+
 class UserSummarySerializer(serializers.ModelSerializer):
 
   full_name = serializers.SerializerMethodField()
@@ -79,6 +133,7 @@ class RegisterSerializer(serializers.ModelSerializer):
     return f"EMP-{next_id:04d}"
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+  username_field = 'email'
   def validate(self, attrs: dict[str, Any]) -> dict[str, Any]:
     data = cast(dict[str, Any], super().validate(attrs))
     data['user'] = UserProfileSerializer(self.user).data
