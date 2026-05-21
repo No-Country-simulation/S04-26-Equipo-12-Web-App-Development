@@ -4,6 +4,7 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     class Role(models.TextChoices):
+        ADMIN = 'ADMIN', 'Admin'
         OPERATOR = 'OPERATOR', 'Operator'
         SUPERVISOR = 'SUPERVISOR', 'Supervisor'
         MANAGER = 'MANAGER', 'Manager'
@@ -61,6 +62,10 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return f'{self.get_full_name()} ({self.role_label()})'
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role == self.Role.ADMIN
 
     @property
     def is_operator(self) -> bool:

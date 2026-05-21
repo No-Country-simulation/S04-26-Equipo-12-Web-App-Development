@@ -6,14 +6,19 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
 
 from apps.users.models import CustomUser
+from core.permissions import IsAdmin, IsAdminOrSupervisor
 
 from .serializers import (
     CustomTokenObtainPairSerializer,
+    UserCreateSerializer,
     UserProfileSerializer,
     LogoutSerializer,
-    RegisterSerializer
+    RegisterSerializer,
+    UserRoleUpdateSerializer
 )
 
 from rest_framework.generics import CreateAPIView
@@ -110,3 +115,74 @@ class MeView(APIView):
   def get(self, request):
     serializer = UserProfileSerializer(request.user)
     return Response(serializer.data, status=status.HTTP_200_OK)
+  
+class UserViewSet(ModelViewSet):
+    """
+    ViewSet para la gestión de usuarios del sistema.
+    La creación está permitida para ADMIN y SUPERVISOR,
+    pero cada uno con restricciones distintas validadas en el serializer.
+    """
+
+    queryset         = CustomUser.objects.filter(is_active=True).order_by('last_name')
+    serializer_class = UserProfileSerializer
+
+    # Solo permitimos los métodos que tienen sentido para este recurso.
+    # DELETE no existe: los usuarios se desactivan (is_active=False), no se eliminan.
+    http_method_names = ['get', 'post', 'patch', 'head', 'options']
+
+    serializer_map = {
+        'create':      UserCreateSerializer,
+        'update_role': UserRoleUpdateSerializer,
+    }
+
+    def get_permissions(self):
+        permission_map = {
+            'create':      [IsAuthenticated, IsAdminOrSupervisor],
+            'update_role': [IsAuthenticated, IsAdmin],
+            'list':        [IsAuthenticated, IsAdminOrSupervisor],
+            'retrieve':    [IsAuthenticated, IsAdminOrSupervisor],
+        }
+        permission_classes = permission_map.get(self.action, [IsAuthenticated])
+        return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        user     = self.request.user
+
+        if self.action == 'list':
+            if user.is_supervisor:
+                # El supervisor solo puede ver y gestionar operarios.
+                return queryset.filter(role=CustomUser.Role.OPERATOR)
+
+            if user.is_admin:
+                return queryset.exclude(role=CustomUser.Role.ADMIN)
+
+        return queryset
+
+    @action(detail=True, methods=['patch'])
+    def update_role(self, request, pk=None):
+        """
+        PATCH /api/v1/users/{id}/update-role/
+
+        Cambia el rol de un usuario entre OPERATOR y SUPERVISOR.
+        Solo ejecutable por un ADMIN
+        """
+        user       = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_role = serializer.validated_data['role']
+
+        old_role     = user.role
+        user.role    = new_role
+        user.save(update_fields=['role', 'updated_at'])
+
+        return Response(
+        {
+            'code': 'USER_ROLE_UPDATED',
+            'old_role': old_role,
+            'new_role': new_role,
+            'user': UserProfileSerializer(user).data,
+        },
+        status=status.HTTP_200_OK,
+    )
