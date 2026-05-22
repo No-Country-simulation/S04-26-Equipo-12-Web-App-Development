@@ -12,6 +12,12 @@ class IsAdminOrSupervisor(BasePermission):
             CustomUser.Role.ADMIN,
             CustomUser.Role.SUPERVISOR
             ]
+class IsAdminOrSupervisorOrManager(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated
+            and request.user.role in ['ADMIN', 'SUPERVISOR', 'MANAGER']
+        )
 
 class IsOperator(BasePermission):
     def has_permission(self, request, view):

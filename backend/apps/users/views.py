@@ -10,7 +10,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import action
 
 from apps.users.models import CustomUser
-from core.permissions import IsAdmin, IsAdminOrSupervisor
+from core.permissions import IsAdmin, IsAdminOrSupervisor, IsAdminOrSupervisorOrManager
 
 from .serializers import (
     CustomTokenObtainPairSerializer,
@@ -139,8 +139,8 @@ class UserViewSet(ModelViewSet):
         permission_map = {
             'create':      [IsAuthenticated, IsAdminOrSupervisor],
             'update_role': [IsAuthenticated, IsAdmin],
-            'list':        [IsAuthenticated, IsAdminOrSupervisor],
-            'retrieve':    [IsAuthenticated, IsAdminOrSupervisor],
+            'list':        [IsAuthenticated, IsAdminOrSupervisorOrManager],
+            'retrieve':    [IsAuthenticated, IsAdminOrSupervisorOrManager],
         }
         permission_classes = permission_map.get(self.action, [IsAuthenticated])
         return [permission() for permission in permission_classes]
@@ -154,10 +154,17 @@ class UserViewSet(ModelViewSet):
                 # El supervisor solo puede ver y gestionar operarios.
                 return queryset.filter(role=CustomUser.Role.OPERATOR)
 
+            if user.is_manager:
+                # El manager solo puede ver y gestionar operarios y supervisores.
+                return queryset.filter(role__in=[CustomUser.Role.OPERATOR, CustomUser.Role.SUPERVISOR])
+
             if user.is_admin:
                 return queryset.exclude(role=CustomUser.Role.ADMIN)
 
         return queryset
+
+    def perform_create(self, serializer):
+        serializer.save()
 
     @action(detail=True, methods=['patch'])
     def update_role(self, request, pk=None):
