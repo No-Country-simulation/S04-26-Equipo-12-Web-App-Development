@@ -1,6 +1,6 @@
-import { Button } from '../../atoms'
-import { cn } from '../../../utils/cn'
-import type { BadgeVariant } from '../../../types'
+import { Button } from '@/components/atoms'
+import { cn } from '@/utils/cn'
+import type { BadgeVariant } from '@/types'
 
 export interface HighPriorityItem {
   id: string
