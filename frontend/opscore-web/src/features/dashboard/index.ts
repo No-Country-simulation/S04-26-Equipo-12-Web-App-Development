@@ -1,1 +1,6 @@
 export { StatsGroup } from './components/StatsGroup'
+export { IncidentStatusSummary } from './components/IncidentStatusSummary'
+export { HighPriorityFeed } from './components/HighPriorityFeed'
+export type { HighPriorityItem } from './components/HighPriorityFeed'
+export { TrendChart } from './components/TrendChart'
+export type { TrendDataPoint } from './components/TrendChart'
