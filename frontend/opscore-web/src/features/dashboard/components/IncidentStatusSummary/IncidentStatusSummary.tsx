@@ -11,7 +11,7 @@ const mockData = [
 
 export const IncidentStatusSummary = () => {
   return (
-    <Card className="flex flex-col w-full ring-2 ring-surface-foreground/40 rounded">
+    <Card className="flex flex-col w-full ring-2 ring-outline-variant rounded">
         <h2 className="text-lg font-semibold text-foreground">Resumen de Estados de Incidencias</h2>
         <StatusSummary statuses={mockData} className="mt-4 gap-4" />
     </Card>

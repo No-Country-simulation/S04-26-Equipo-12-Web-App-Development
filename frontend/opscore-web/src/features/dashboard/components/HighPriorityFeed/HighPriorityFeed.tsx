@@ -26,10 +26,12 @@ const sectorDotStyles: Record<BadgeVariant, string> = {
 
 export function HighPriorityFeed({ items, onViewAll, className }: HighPriorityFeedProps) {
   return (
-    <div className={cn('rounded-xl bg-surface-background flex flex-col', className)}>
+    <div className={cn('rounded bg-surface-background flex flex-col ring-2 ring-outline-variant', className)}>
       <div className="flex items-center justify-between px-4 py-3 border-b border-outline-variant">
         <h3 className="text-sm font-semibold text-foreground">Alta Prioridad</h3>
-        <span className="text-xs text-surface-foreground">Recientes</span>
+        <div className="bg-surface-foreground/20 px-2 py-0.5 rounded">
+          <span className="text-xs text-foreground">Recientes</span>
+        </div>
       </div>
 
       <ul className="flex-1 divide-y divide-outline-variant">
@@ -51,10 +53,12 @@ export function HighPriorityFeed({ items, onViewAll, className }: HighPriorityFe
       </ul>
 
       {onViewAll && (
-        <div className="px-4 py-3 border-t border-outline-variant">
-          <Button variant="ghost" size="sm" fullWidth onClick={onViewAll}>
-            Ver todas
-          </Button>
+        <div className="px-2 py-1.5 border-t border-outline-variant">
+          <div className="w-full border border-outline-variant rounded">
+            <Button variant="ghost" size="sm" fullWidth onClick={onViewAll}>
+              VER TODAS
+            </Button>
+          </div>
         </div>
       )}
     </div>

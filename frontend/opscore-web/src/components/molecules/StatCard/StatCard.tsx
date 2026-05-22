@@ -23,7 +23,7 @@ const trendStyles: Record<StatTrend, string> = {
 
 export function StatCard({ title, value, icon: Icon, delta, trend = 'neutral', alert = false, badgeVariant = 'neutral', className }: StatCardProps) {
   return (
-    <div className={cn('flex flex-col gap-2 rounded bg-surface-background ring-2 ring-surface-foreground/40 p-4', alert && 'ring-badge-critical/40', className)}>
+    <div className={cn('flex flex-col gap-2 rounded bg-surface-background ring-2 ring-outline-variant p-4', alert && 'ring-badge-critical/40', className)}>
       <div className={cn("flex items-center justify-between text-surface-foreground", badgeVariant !== 'neutral' && `text-badge-${badgeVariant}`)}>
         <span className="text-xs font-semibold uppercase tracking-wide">{title}</span>
         {Icon && <Icon size={16} />}
