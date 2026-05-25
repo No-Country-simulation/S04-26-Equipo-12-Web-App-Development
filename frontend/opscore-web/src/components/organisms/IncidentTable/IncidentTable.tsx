@@ -29,7 +29,7 @@ const statusOptions = [
   { value: '', label: 'Todos' },
 ]
 
-const columns = ['ID', 'Fecha/Hora', 'Descripción', 'Ubicación', 'Operario', 'Estado', 'Acciones']
+const columns = ['ID', 'Fecha/Hora', 'Descripción', 'Ubicación', 'Operario Asignado', 'Estado', 'Acciones']
 
 export function IncidentTable({ incidents, onRowClick, onFilterChange }: IncidentTableProps) {
   return (
