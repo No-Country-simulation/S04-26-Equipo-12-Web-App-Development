@@ -13,6 +13,8 @@ ALLOWED_HOSTS = config(
     cast=Csv()
 )
 
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='OpsCore <noreply@opscore.local>')
+
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
