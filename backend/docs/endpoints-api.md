@@ -10,8 +10,10 @@
 ## Índice
 
 1. [Autenticación (`/api/v1/auth/`)](#1-autenticación)
-2. [Incidencias (`/api/v1/incidents/`)](#2-incidencias)
-3. [Archivos (`/api/v1/incidents/{id}/files/`)](#3-archivos)
+2. [Usuarios (`/api/v1/auth/users/`)](#2-usuarios)
+3. [Incidencias (`/api/v1/incidents/`)](#3-incidencias)
+4. [Archivos (`/api/v1/incidents/{incident_pk}/files/`)](#4-archivos)
+5. [Analíticas (`/api/v1/analytics/`)](#5-analíticas)
 
 ---
 
@@ -44,7 +46,7 @@ Inicia sesión con email y contraseña. Retorna tokens JWT + perfil del usuario.
     "first_name": "string",
     "last_name": "string",
     "email": "string",
-    "role": "string (OPERATOR|SUPERVISOR|MANAGER)",
+    "role": "string (OPERATOR|SUPERVISOR|MANAGER|ADMIN)",
     "phone": "string",
     "employee_code": "string",
     "area": "int | null",
@@ -57,7 +59,7 @@ Inicia sesión con email y contraseña. Retorna tokens JWT + perfil del usuario.
 
 ---
 
-### 1.2 `POST /api/v1/auth/register/`
+### 1.2 `POST /api/v1/auth/register-operator/`
 
 Registra un nuevo usuario con rol `OPERATOR`. Genera código de empleado automático (`EMP-XXXX`).
 
@@ -149,7 +151,7 @@ Retorna el perfil completo del usuario autenticado.
   "first_name": "string",
   "last_name": "string",
   "email": "string",
-  "role": "string (OPERATOR|SUPERVISOR|MANAGER)",
+  "role": "string (OPERATOR|SUPERVISOR|MANAGER|ADMIN)",
   "phone": "string",
   "employee_code": "string",
   "area": "int | null",
@@ -161,7 +163,133 @@ Retorna el perfil completo del usuario autenticado.
 
 ---
 
-## 2. Incidencias
+## 2. Usuarios
+
+Todas las rutas de usuarios requieren autenticación.  
+Los usuarios no se eliminan físicamente (no hay `DELETE`); se desactivan vía `is_active=False`.
+
+---
+
+### 2.1 `GET /api/v1/auth/users/`
+
+Lista los usuarios del sistema.
+
+- **Permiso:** `IsAuthenticated` + `IsAdminOrSupervisorOrManager`
+  - **ADMIN:** ve todos los usuarios (excepto otros ADMINs)
+  - **SUPERVISOR:** ve solo OPERATORs
+  - **MANAGER:** ve OPERATORs y SUPERVISORs
+  - **OPERATOR:** no tiene acceso
+- **Headers:** `Authorization: Bearer <access_token>`
+- **Respuesta 200:**
+
+```json
+[
+  {
+    "id": "int",
+    "full_name": "string",
+    "first_name": "string",
+    "last_name": "string",
+    "email": "string",
+    "role": "string (OPERATOR|SUPERVISOR|MANAGER|ADMIN)",
+    "phone": "string",
+    "employee_code": "string",
+    "area": "int | null",
+    "area_name": "string | null",
+    "is_active": "boolean",
+    "created_at": "datetime"
+  }
+]
+```
+
+---
+
+### 2.2 `POST /api/v1/auth/users/`
+
+Crea un nuevo usuario.
+
+- **Permiso:** `IsAuthenticated` + `IsAdminOrSupervisor`
+  - **SUPERVISOR:** solo puede crear OPERATORs
+  - **ADMIN:** puede crear OPERATOR, SUPERVISOR y MANAGER (no ADMIN)
+- **Headers:** `Authorization: Bearer <access_token>`, `Content-Type: application/json`
+- **Body (JSON):**
+
+```json
+{
+  "email": "string (formato email, obligatorio)",
+  "first_name": "string (obligatorio)",
+  "last_name": "string (obligatorio)",
+  "password": "string (mín. 8, máx. 30, obligatorio)",
+  "role": "string (OPERATOR|SUPERVISOR|MANAGER, obligatorio)",
+  "area": "int (ID de Area, opcional)",
+  "phone": "string (opcional)",
+  "employee_code": "string (opcional)"
+}
+```
+
+- **Respuesta 201:** Objeto de usuario creado (`UserProfileSerializer`)
+
+---
+
+### 2.3 `GET /api/v1/auth/users/{id}/`
+
+Obtiene el detalle de un usuario específico.
+
+- **Permiso:** `IsAuthenticated` + `IsAdminOrSupervisorOrManager`
+- **Parámetros de ruta:** `id` (int) — ID del usuario
+- **Headers:** `Authorization: Bearer <access_token>`
+- **Respuesta 200:** Objeto de usuario (`UserProfileSerializer`)
+
+---
+
+### 2.4 `PATCH /api/v1/auth/users/{id}/`
+
+Actualiza parcialmente un usuario.
+
+- **Permiso:** `IsAuthenticated`
+- **Headers:** `Authorization: Bearer <access_token>`, `Content-Type: application/json`
+- **Body (JSON):** Campos a actualizar (todos opcionales)
+
+```json
+{
+  "first_name": "string (opcional)",
+  "last_name": "string (opcional)",
+  "phone": "string (opcional)",
+  "area": "int (opcional)"
+}
+```
+
+- **Respuesta 200:** Objeto de usuario actualizado
+
+---
+
+### 2.5 `PATCH /api/v1/auth/users/{id}/update-role/`
+
+Cambia el rol de un usuario entre `OPERATOR` y `SUPERVISOR`.
+
+- **Permiso:** `IsAuthenticated` + `IsAdmin`
+- **Headers:** `Authorization: Bearer <access_token>`, `Content-Type: application/json`
+- **Body (JSON):**
+
+```json
+{
+  "role": "string (OPERATOR|SUPERVISOR, obligatorio)"
+}
+```
+
+- **Respuesta 200:**
+
+```json
+{
+  "code": "USER_ROLE_UPDATED",
+  "old_role": "string",
+  "new_role": "string",
+  "user": { "... perfil del usuario ..." }
+}
+```
+
+---
+
+## 3. Incidencias
 
 Todas las rutas de incidencias requieren autenticación.
 
@@ -186,7 +314,7 @@ Todas las rutas de incidencias requieren autenticación.
 
 ---
 
-### 2.1 `GET /api/v1/incidents/`
+### 3.1 `GET /api/v1/incidents/`
 
 Lista las incidencias asignadas al usuario autenticado.
 
@@ -196,12 +324,13 @@ Lista las incidencias asignadas al usuario autenticado.
 
 ---
 
-### 2.2 `POST /api/v1/incidents/`
+### 3.2 `POST /api/v1/incidents/`
 
-Crea una nueva incidencia. `reported_by` se asigna automáticamente al usuario autenticado.
+Crea una nueva incidencia. `reported_by` se asigna automáticamente al usuario autenticado.  
+El `status` se asigna automáticamente como `OPEN`.
 
-- **Permiso:** `IsAuthenticated`
-- **Headers:** `Content-Type: application/json`
+- **Permiso:** `IsAuthenticated` + `IsOperator` (solo OPERATOR puede crear)
+- **Headers:** `Authorization: Bearer <access_token>`, `Content-Type: application/json`
 - **Body (JSON):**
 
 ```json
@@ -220,7 +349,7 @@ Crea una nueva incidencia. `reported_by` se asigna automáticamente al usuario a
 
 ---
 
-### 2.3 `GET /api/v1/incidents/{id}/`
+### 3.3 `GET /api/v1/incidents/{id}/`
 
 Obtiene el detalle completo de una incidencia específica.
 
@@ -251,17 +380,39 @@ Obtiene el detalle completo de una incidencia específica.
 
 ---
 
-## 3. Archivos
+### 3.4 `PATCH /api/v1/incidents/{id}/change-status/`
 
-Rutas anidadas dentro de una incidencia. Todas requieren autenticación.
+Cambia el estado de una incidencia. Solo el usuario asignado puede cambiar el estado.  
+Si se cambia a `CLOSED`, se asigna automáticamente `resolved_at`. Si se cambia a otro estado, `resolved_at` se limpia.
+
+- **Permiso:** `IsAuthenticated` + `IsAssignedToIncident`
+- **Headers:** `Authorization: Bearer <access_token>`, `Content-Type: application/json`
+- **Parámetros de ruta:** `id` (int) — ID de la incidencia
+- **Body (JSON):**
+
+```json
+{
+  "status": "string (OPEN|IN_PROGRESS|CLOSED, obligatorio)"
+}
+```
+
+- **Transiciones válidas:** OPEN → IN_PROGRESS → CLOSED (CANCELLED no se puede asignar desde este endpoint)
+- **Respuesta 200:** Objeto de incidencia actualizado (`IncidentDetailSerializer`)
+- **Error 400:** `{ "status": ["El incidente ya se encuentra en ese estado."] }`
 
 ---
 
-### 3.1 `GET /api/v1/incidents/{incident_pk}/files/`
+## 4. Archivos
+
+Rutas anidadas dentro de una incidencia (`/api/v1/incidents/{incident_pk}/files/`).
+
+---
+
+### 4.1 `GET /api/v1/incidents/{incident_pk}/files/`
 
 Lista todos los archivos adjuntos a una incidencia.
 
-- **Permiso:** `IsAuthenticated`
+- **Permiso:** No requiere autenticación explícita (público de facto)
 - **Parámetros de ruta:** `incident_pk` (int) — ID de la incidencia
 - **Respuesta 200:**
 
@@ -280,18 +431,18 @@ Lista todos los archivos adjuntos a una incidencia.
 
 ---
 
-### 3.2 `POST /api/v1/incidents/{incident_pk}/files/`
+### 4.2 `POST /api/v1/incidents/{incident_pk}/files/`
 
 Sube un archivo (imagen o video) a una incidencia.
 
-- **Permiso:** `IsAuthenticated`
-- **Headers:** `Authorization: Bearer <access_token>`, `Content-Type: multipart/form-data`
+- **Permiso:** No requiere autenticación explícita (público de facto)
+- **Headers:** `Content-Type: multipart/form-data`
 - **Parámetros de ruta:** `incident_pk` (int) — ID de la incidencia
 - **Body (form-data):**
 
-| Campo  | Tipo | Obligatorio | Descripción         |
-|--------|------|-------------|---------------------|
-| `file` | File | Sí          | Archivo a subir     |
+| Campo  | Tipo | Obligatorio | Descripción     |
+|--------|------|-------------|-----------------|
+| `file` | File | Sí          | Archivo a subir |
 
 - **Tipos MIME permitidos:**
 
@@ -315,7 +466,74 @@ Sube un archivo (imagen o video) a una incidencia.
 
 ---
 
-## 4. Django Admin
+## 5. Analíticas
+
+Endpoints para métricas y exportación de reportes. Solo accesibles por usuarios con rol `MANAGER`.
+
+---
+
+### 5.1 `GET /api/v1/analytics/metrics/`
+
+Retorna un resumen de métricas generales.
+
+- **Permiso:** `IsAuthenticated` + `IsManager`
+- **Headers:** `Authorization: Bearer <access_token>`
+- **Query params opcionales:** `start_date` (YYYY-MM-DD), `end_date` (YYYY-MM-DD)
+- **Respuesta 200:**
+
+```json
+{
+  "avg_response_time": [
+    { "area_name": "string", "avg_minutes": "float" }
+  ],
+  "avg_resolution_time": [
+    { "area_name": "string", "avg_minutes": "float" }
+  ],
+  "resolution_rate": {
+    "total": "int",
+    "closed": "int",
+    "rate": "float (porcentaje)"
+  },
+  "incidents_by_area": [
+    { "area_name": "string", "count": "int" }
+  ],
+  "root_cause_frequency": [
+    { "type_name": "string", "root_cause": "string", "count": "int" }
+  ],
+  "critical_incidents_over_time": [
+    { "date": "string (YYYY-MM-DD)", "count": "int" }
+  ]
+}
+```
+
+---
+
+### 5.2 `GET /api/v1/analytics/reports/export/`
+
+Exporta un reporte en formato Excel (`.xlsx`) o texto plano (`.txt`).
+
+- **Permiso:** `IsAuthenticated` + `IsManager`
+- **Headers:** `Authorization: Bearer <access_token>`
+- **Query params:**
+
+| Parámetro     | Tipo   | Obligatorio | Descripción                                | Valores                            |
+|---------------|--------|-------------|--------------------------------------------|------------------------------------|
+| `source`      | string | No          | Origen de los datos                        | `metrics` (default), `history`, `filtered` |
+| `format`      | string | No          | Formato de exportación                     | `excel` (default), `pdf`           |
+| `start_date`  | string | No          | Fecha inicial (YYYY-MM-DD)                 |                                    |
+| `end_date`    | string | No          | Fecha final (YYYY-MM-DD)                   |                                    |
+| `area`        | int    | No          | Filtrar por área (solo source=filtered)    |                                    |
+| `type`        | int    | No          | Filtrar por tipo (solo source=filtered)    |                                    |
+| `status`      | string | No          | Filtrar por estado (solo source=filtered)  |                                    |
+| `priority`    | string | No          | Filtrar por prioridad (solo source=filtered)|                                   |
+
+- **Respuesta 200:** Archivo binario (descarga)
+  - `Content-Type`: `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` (excel) o `text/plain` (pdf)
+  - `Content-Disposition`: `attachment; filename="reporte_{source}.(xlsx|txt)"`
+
+---
+
+## 6. Django Admin
 
 - **URL:** `/admin/`
 - **Autenticación:** Django admin (separada del JWT)
@@ -323,7 +541,7 @@ Sube un archivo (imagen o video) a una incidencia.
 
 ---
 
-## 5. Modelos de Datos (Referencia Rápida)
+## 7. Modelos de Datos (Referencia Rápida)
 
 ### `CustomUser`
 | Campo          | Tipo                    |
@@ -376,7 +594,9 @@ Sube un archivo (imagen o video) a una incidencia.
 
 ## Notas Adicionales
 
-- No existen endpoints `PUT`, `PATCH` o `DELETE` para incidencias ni archivos.
+- **Incidencias:** No existen endpoints `PUT` o `DELETE`. La actualización parcial se hace vía `PATCH` solo para cambio de estado (`change-status`). No hay endpoint para editar `title`, `description`, `area`, `machine`, `type` o `priority` después de creada la incidencia.
+- **Archivos:** No existen endpoints `PUT`, `PATCH` o `DELETE` para archivos.
+- **Usuarios:** No existe `DELETE` (los usuarios se desactivan vía `is_active=False`). El `PATCH` general permite editar perfil. El `update-role` es un action dedicado solo para ADMIN.
 - Los serializers `IncidentAssignSerializer` e `IncidentResolveSerializer` están definidos pero **no conectados** a ninguna vista aún.
 - El `logs` app tiene servicios de logueo pero **no están integrados** con las vistas actuales.
 - **JWT:** Access token expira en 8 horas, Refresh token en 7 días. Los refresh tokens se rotan y blacklistean.
