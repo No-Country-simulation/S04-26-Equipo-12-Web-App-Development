@@ -1,3 +1,7 @@
+import secrets
+
+from django.conf import settings
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -13,7 +17,9 @@ from apps.users.models import CustomUser
 from core.permissions import IsAdmin, IsAdminOrSupervisor, IsAdminOrSupervisorOrManager
 
 from .serializers import (
+    ChangePasswordSerializer,
     CustomTokenObtainPairSerializer,
+    PasswordRecoverySerializer,
     UserCreateSerializer,
     UserProfileSerializer,
     LogoutSerializer,
@@ -23,6 +29,9 @@ from .serializers import (
 
 from rest_framework.generics import CreateAPIView
 from typing import cast, Any
+
+from django.template.loader import render_to_string
+from django.core.mail import EmailMultiAlternatives
 
 class LoginView(TokenObtainPairView):
   """
@@ -75,6 +84,7 @@ class LogoutView(APIView):
   POST /api/auth/logout
   """
   permission_classes = (IsAuthenticated,)
+  serializer_class = LogoutSerializer
 
   def post(self, request):
     serializer = LogoutSerializer(data=request.data)
@@ -111,6 +121,7 @@ class MeView(APIView):
   Retorna el perfil completo del usuario autenticado
   """
   permission_classes = (IsAuthenticated,)
+  serializer_class = UserProfileSerializer
 
   def get(self, request):
     serializer = UserProfileSerializer(request.user)
@@ -193,3 +204,85 @@ class UserViewSet(ModelViewSet):
         },
         status=status.HTTP_200_OK,
     )
+
+class PasswordRecoveryView(APIView):
+    permission_classes = [AllowAny]
+    serializer_class   = PasswordRecoverySerializer
+
+    def post(self, request):
+        serializer = cast(
+            PasswordRecoverySerializer,
+            PasswordRecoverySerializer(data=request.data)
+        )
+        serializer.is_valid(raise_exception=True)
+
+        user         = serializer.user
+        new_password = secrets.token_urlsafe(12)
+
+        user.set_password(new_password)
+        user.save(update_fields=['password', 'updated_at'])
+
+        html_content = render_to_string(
+            'users/emails/password_recovery.html',
+            {
+                'user_name':    user.get_full_name(),
+                'user_email':   user.email,
+                'new_password': new_password,
+            }
+        )
+
+        plain_text = (
+            f'Hola {user.get_full_name()},\n\n'
+            f'Tu nueva contraseña de acceso a OpsCore es:\n\n'
+            f'    {new_password}\n\n'
+            f'Por seguridad, cambia esta contraseña inmediatamente.\n'
+            f'Si no solicitaste este cambio, contacta al administrador.\n\n'
+            f'— Equipo OpsCore'
+        )
+
+        email = EmailMultiAlternatives(
+            subject    = 'OpsCore – Recuperación de contraseña',
+            body       = plain_text,
+            from_email = settings.DEFAULT_FROM_EMAIL,
+            to         = [user.email],
+        )
+        email.attach_alternative(html_content, 'text/html')
+        email.send(fail_silently=False)
+
+        return Response(
+            {'code': 'PASSWORD_RECOVERY_EMAIL_SENT'},
+            status=status.HTTP_200_OK,
+        )
+    
+class ChangePasswordView(APIView):
+    
+    permission_classes = [IsAuthenticated]
+    serializer_class   = ChangePasswordSerializer
+
+    def post(self, request):
+       serializer = ChangePasswordSerializer(
+          data = request.data,
+          context = {'request': request}
+       )
+       serializer.is_valid(raise_exception=True)
+
+       validated_data = cast(dict[str, Any], serializer.validated_data)
+
+       user = cast(CustomUser, request.user)
+
+       user.set_password(validated_data['new_password'])
+       user.save(update_fields=['password', 'updated_at'])
+
+       refresh = RefreshToken.for_user(user)
+
+       return Response(
+           {
+              'message': 'PASSWORD_CHANGED_SUCCESSFULLY',
+              'user': UserProfileSerializer(user).data,
+              'tokens': {
+                  'refresh': str(refresh),
+                  'access': str(refresh.access_token),
+              }
+           },
+           status=status.HTTP_200_OK
+       )
