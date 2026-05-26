@@ -3,6 +3,19 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import CustomUser
 from typing import Any, cast
 
+class PasswordRecoverySerializer(serializers.Serializer):
+  email = serializers.EmailField()
+
+  def validate_email(self, value):
+      try:
+        self.user = CustomUser.objects.get(email=value, is_active=True)
+      except CustomUser.DoesNotExist:
+        raise serializers.ValidationError({
+          'detail':  'INVALID_CREDENTIALS'
+        })
+
+      return value
+
 class UserCreateSerializer(serializers.ModelSerializer):
 
   password = serializers.CharField(write_only=True, min_length=8, max_length=30)
@@ -48,7 +61,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
         user.save()
         return user
 
-class UserRoleUpdateSerializer(serializers.ModelSerializer):
+class UserRoleUpdateSerializer(serializers.Serializer):
 
   role = serializers.ChoiceField(
      choices=[
@@ -87,7 +100,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
       'area',
       'area_name',
       'is_active',
-      'created_at'
+      'created_at',
+      'updated_at'
     ]
 
   def get_full_name(self, obj) -> str:
@@ -143,3 +157,33 @@ class LogoutSerializer(serializers.Serializer):
   refresh = serializers.CharField(
     help_text="Refresh token",
   )
+
+class ChangePasswordSerializer(serializers.Serializer):
+  
+  current_password = serializers.CharField(write_only=True)
+  new_password = serializers.CharField(write_only=True, min_length=8, max_length=30)
+  confirm_password = serializers.CharField(write_only=True)
+
+  def validate_current_password(self, value):
+     
+     user = self.context['request'].user
+
+     if not user.check_password(value):
+        raise serializers.ValidationError({
+          'current_password': 'INVALID_PASSWORD'
+        })
+
+     return value
+  
+  def validate(self, attrs):
+    if attrs['new_password'] != attrs['confirm_password']:
+      raise serializers.ValidationError({
+        'confirm_password': 'PASSWORDS_DO_NOT_MATCH'
+      })
+
+    if attrs['new_password'] == attrs['current_password']:
+      raise serializers.ValidationError({
+        'new_password': 'PASSWORDS_ARE_THE_SAME'
+      })
+
+    return attrs
