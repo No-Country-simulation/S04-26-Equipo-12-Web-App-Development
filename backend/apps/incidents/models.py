@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.core.exceptions import ValidationError
 
 
 class Area(models.Model):
@@ -113,6 +114,29 @@ class Incident(models.Model):
 
     def __str__(self):
         return f'[{self.status}] {self.title}'
+
+    ALLOWED_STATUS_TRANSITIONS = {
+        Status.OPEN: {Status.IN_PROGRESS, Status.CLOSED},
+        Status.IN_PROGRESS: {Status.OPEN, Status.CLOSED},
+        Status.CLOSED: set(),
+    }
+
+    def validate_status_transition(self, new_status):
+        if self.status == new_status:
+            return
+
+        allowed_transitions = self.ALLOWED_STATUS_TRANSITIONS.get(self.status, set())
+
+        if new_status not in allowed_transitions:
+            raise ValidationError(
+                f"No se puede cambiar el estado de {self.status} a {new_status}."
+            )
+
+    def validate_can_be_reassigned(self):
+        if self.status == self.Status.CLOSED:
+            raise ValidationError(
+                "No se puede reasignar una incidencia cerrada."
+            )    
 
     @property
     def resolution_time_minutes(self):

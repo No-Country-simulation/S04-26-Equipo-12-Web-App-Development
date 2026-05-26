@@ -1,7 +1,6 @@
 from rest_framework import serializers
-
+from apps.users.models import CustomUser
 from apps.users.serializers import UserSummarySerializer
-
 from .models import (
     Area,
     IncidentType,
@@ -56,20 +55,46 @@ class IncidentCreateSerializer(serializers.ModelSerializer):
             ]
 
 
-class IncidentAssignSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = IncidentAssignment
-        fields = [
-            'assigned_to',
-            'notes'
-            ]
+class IncidentAssignSerializer(serializers.Serializer):
+    assigned_to = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all()
+    )
 
     def validate_assigned_to(self, user):
-        if user.role != 'OPERATOR':
+        valid_roles = [
+            CustomUser.Role.OPERATOR,
+            CustomUser.Role.SUPERVISOR,
+        ]
+
+        if user.role not in valid_roles:
             raise serializers.ValidationError(
-                'El responsable asignado debe tener rol OPERATOR.'
+                "El usuario asignado debe tener rol OPERATOR o SUPERVISOR."
             )
+
         return user
+
+
+class IncidentUpdateSerializer(serializers.Serializer):
+    priority = serializers.ChoiceField(
+        choices=Incident.Priority.choices,
+        required=False,
+    )
+    description = serializers.CharField(
+        required=False,
+        allow_blank=False,
+    )
+    area = serializers.PrimaryKeyRelatedField(
+        queryset=Area.objects.all(),
+        required=False,
+    )
+
+    def validate(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError(
+                "Debe enviar al menos un campo para actualizar."
+            )
+
+        return attrs
 
 
 class IncidentStatusUpdateSerializer(serializers.Serializer):
@@ -77,7 +102,6 @@ class IncidentStatusUpdateSerializer(serializers.Serializer):
         choices=[
             Incident.Status.OPEN,
             Incident.Status.IN_PROGRESS,
-            Incident.Status.CLOSED,
         ]
     )
 
@@ -90,6 +114,17 @@ class IncidentStatusUpdateSerializer(serializers.Serializer):
             )
 
         return value
+
+
+class IncidentCloseSerializer(serializers.Serializer):
+    root_cause = serializers.CharField(
+        required=True,
+        allow_blank=False,
+    )
+    solution = serializers.CharField(
+        required=True,
+        allow_blank=False,
+    )
 
 
 class IncidentResolveSerializer(serializers.ModelSerializer):
