@@ -4,13 +4,24 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import (
+    CreateModelMixin,
+    ListModelMixin, 
+    RetrieveModelMixin,
+)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.exceptions import ValidationError
-from core.permissions import IsAssignedToIncident, IsOperator, IsSupervisor
+from apps.users.models import CustomUser
+from core.permissions import (
+    IsAssignedToIncident,
+    IsOperator,
+    IsSupervisor,
+    IsSupervisorOrManager,
+)
 from .models import Incident
+from .filters import IncidentFilter
 from .serializers import (
     IncidentAssignSerializer,
     IncidentCloseSerializer,
@@ -64,13 +75,7 @@ class IncidentViewSet(
         OrderingFilter,
     ]
 
-    filterset_fields = [
-        "status",
-        "priority",
-        "area",
-        "machine",
-        "type",
-    ]
+    filterset_class = IncidentFilter
 
     ordering_fields = [
         "created_at",
@@ -106,14 +111,31 @@ class IncidentViewSet(
         
         if self.action in supervisor_actions:
             return [IsAuthenticated(), IsSupervisor()]
+        
+        if self.action in ["list", "retrieve"]:
+            return [IsAuthenticated(), IsSupervisorOrManager()]
 
         return [IsAuthenticated()]
 
     def get_queryset(self):
         queryset = super().get_queryset()
+        user = self.request.user
 
-        if self.action == "list":
-            return queryset.filter(assigned_to=self.request.user)
+        if self.action in ["list", "retrieve"]:
+            if user.role == CustomUser.Role.MANAGER:
+                return queryset
+
+            if user.role == CustomUser.Role.SUPERVISOR:
+                show_all = (
+                    self.request.query_params.get("all", "").lower() == "true"
+                )
+
+                if show_all:
+                    return queryset
+
+                return queryset.filter(assigned_to=user)
+
+            return queryset.none()
 
         return queryset
 
@@ -135,12 +157,15 @@ class IncidentViewSet(
         )
 
         log_incident_created(
-        incident = incident,
-        user = self.request.user,
-    )
+            incident = incident,
+            user = self.request.user,
+        )
 
     def _raise_drf_validation_error(self, error):
-        raise ValidationError(error.message_dict if hasattr(error, "message_dict") else error.messages)
+        if hasattr(error, "message_dict"):
+            raise ValidationError(error.message_dict)
+
+        raise ValidationError(error.messages)
 
     @action(
         detail = True,
@@ -163,14 +188,15 @@ class IncidentViewSet(
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
-        previous_status = incident.status
         was_unassigned = incident.assigned_to_id is None
-
         incident.assigned_to = serializer.validated_data["assigned_to"]
 
         if incident.status == Incident.Status.OPEN:
-            incident.validate_status_transition(Incident.Status.IN_PROGRESS)
+            try:
+                incident.validate_status_transition(Incident.Status.IN_PROGRESS)
+            except DjangoValidationError as error:
+                self._raise_drf_validation_error(error)
+
             incident.status = Incident.Status.IN_PROGRESS
 
         incident.save(
