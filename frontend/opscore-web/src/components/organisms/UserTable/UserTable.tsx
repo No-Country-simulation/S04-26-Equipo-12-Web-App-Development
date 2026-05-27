@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react'
 import { UserPlus, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Button, Tab } from '../../atoms'
-import { SearchInput, UserRow } from '../../molecules'
-import type { UserRowData } from '../../molecules'
+import { Button, Tab } from '@/components/atoms'
+import { SearchInput, UserRow } from '@/components/molecules'
+import type { UserRowData } from '@/components/molecules'
 import { cn } from '@/utils/cn'
 
 interface UserTableProps {
@@ -56,7 +56,7 @@ export function UserTable({
     <div className="flex flex-col gap-4">
       {/* Tabs + Add button */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex gap-2">
+        <div className="flex gap-1 ring-2 ring-outline-variant rounded text-foreground">
           {['Operadores', 'Supervisores'].map((tabLabel) => (
             <Tab
               key={tabLabel}
@@ -65,7 +65,7 @@ export function UserTable({
                 setCurrentPage(1)
                 onTabChange(tabLabel)
               }}
-              className="text-foreground px-4 py-1.5"
+              className="px-4 py-1.5"
             >
               {tabLabel}
             </Tab>
@@ -78,7 +78,7 @@ export function UserTable({
       </div>
 
       {/* Search + Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex w-full justify-between items-center flex-wrap gap-3">
         <SearchInput
           placeholder="Buscar por ID, nombre o legajo..."
           className="max-w-xs"
@@ -88,7 +88,7 @@ export function UserTable({
             onSearchChange(e.target.value)
           }}
         />
-        <Button variant="ghost" size="sm" type="button">
+        <Button variant="ghost" size="sm" type="button" className={cn('text-foreground ring-2 ring-outline-variant rounded', 'hover:bg-surface-hover')}>
           <Filter size={14} />
           Filtros
         </Button>
