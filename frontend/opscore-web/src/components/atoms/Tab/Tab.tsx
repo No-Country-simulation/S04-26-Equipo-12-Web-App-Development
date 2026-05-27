@@ -9,16 +9,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   fullWidth?: boolean
   leftIcon?: LucideIcon
   rightIcon?: LucideIcon
+  isActive?: boolean
 }
 
-export const Tab = ({children, className, ...props}: ButtonProps) => {
+export const Tab = ({children, className, isActive, ...props}: ButtonProps) => {
   return (
     <button 
       className={cn(
-        'w-full p-12 mb-2 text-sm text-center border-2 border-primary-700 rounded-tl-lg rounded-tr-lg',
+        'w-full p-2 m-1 rounded text-sm text-center',
         'transition-colors duration-150',
-        'active:bg-primary-700 active:text-secondary-500',
-        'hover:bg-primary-600 hover:text-secondary-500',
+        'hover:bg-primary/70 hover:text-surface-background',
+        isActive && 'bg-primary text-surface-background',
         className,
       )} 
       {...props}>

@@ -1,14 +1,16 @@
 import { MoreVertical } from 'lucide-react'
 import { Button } from '../../atoms'
+import { cn } from '@/utils/cn'
 
 export interface UserRowData {
   id: string
   area: string
   legajo: string
-  firstName: string
-  lastName: string
+  nombre: string
+  apellido: string
   email: string
-  phone: string
+  telefono: string
+  active?: boolean
 }
 
 interface UserRowProps {
@@ -18,14 +20,23 @@ interface UserRowProps {
 
 export function UserRow({ user, onAction }: UserRowProps) {
   return (
-    <tr className="border-b border-outline-variant hover:bg-surface-hover transition-colors duration-100">
+    <tr
+      className={cn(
+        'border-b border-outline-variant hover:bg-surface-hover transition-colors duration-100',
+        user.active === false && 'opacity-50',
+      )}
+    >
       <td className="px-4 py-3 text-xs text-surface-foreground font-mono">{user.id}</td>
       <td className="px-4 py-3 text-sm text-foreground">{user.area}</td>
       <td className="px-4 py-3 text-sm text-surface-foreground">{user.legajo}</td>
-      <td className="px-4 py-3 text-sm text-foreground">{user.firstName}</td>
-      <td className="px-4 py-3 text-sm text-foreground">{user.lastName}</td>
+      <td className={cn('px-4 py-3 text-sm text-foreground', user.active === false && 'line-through')}>
+        {user.nombre}
+      </td>
+      <td className={cn('px-4 py-3 text-sm text-foreground', user.active === false && 'line-through')}>
+        {user.apellido}
+      </td>
       <td className="px-4 py-3 text-sm text-surface-foreground">{user.email}</td>
-      <td className="px-4 py-3 text-sm text-surface-foreground">{user.phone}</td>
+      <td className="px-4 py-3 text-sm text-surface-foreground">{user.telefono}</td>
       <td className="px-4 py-3">
         <Button
           variant="ghost"

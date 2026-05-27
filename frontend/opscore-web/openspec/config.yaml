@@ -1,0 +1,72 @@
+schema: spec-driven
+
+project: s04-26-equipo-12-web-app-development
+initialized: "2026-05-26"
+
+context: |
+  Stack: React 19, TypeScript 6, Vite 8, Tailwind CSS 4, React Router 7
+  State: Zustand 5 (global), TanStack Query 5 (server state)
+  HTTP: Axios 1.x
+  Architecture: Feature-sliced (features/), Atomic Design (components/atoms|molecules|organisms|templates)
+  Styling: Tailwind 4 + clsx + tailwind-merge
+  Animation: Motion (Framer Motion successor)
+  Icons: lucide-react
+
+strict_tdd: false
+
+testing:
+  strict_tdd: false
+  reason: No test runner installed (no Vitest, Jest, or Playwright config found)
+  unit:
+    available: false
+    tool: "—"
+    command: "—"
+  integration:
+    available: false
+    tool: "—"
+    command: "—"
+  e2e:
+    available: false
+    tool: Playwright (project skill exists but not installed)
+    command: "—"
+  coverage:
+    available: false
+    command: "—"
+  quality:
+    linter:
+      available: true
+      command: "npm run lint"
+    type_checker:
+      available: true
+      command: "tsc -b"
+    formatter:
+      available: false
+      command: "—"
+
+rules:
+  proposal:
+    - Include rollback plan for risky changes
+    - Identify impacted features/ modules explicitly
+  specs:
+    - Use Given/When/Then for scenarios
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY)
+    - Scope specs to feature slices when possible
+  design:
+    - Include component hierarchy for UI changes
+    - Document architecture decisions with rationale
+    - Reference Atomic Design layer (atom/molecule/organism/template)
+  tasks:
+    - Group by phase, use hierarchical numbering
+    - Keep tasks completable in one session
+  apply:
+    - Follow existing Atomic Design conventions in components/
+    - Co-locate feature logic in features/{name}/ (components, hooks, api.ts)
+    - Use cn() (clsx + tailwind-merge) for conditional class composition
+    tdd: false
+    test_command: ""
+  verify:
+    test_command: "npm run lint && tsc -b"
+    build_command: "npm run build"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas

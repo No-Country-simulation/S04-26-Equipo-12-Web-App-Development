@@ -1,50 +1,77 @@
-import { UserPlus, Filter } from 'lucide-react'
-import { Button } from '../../atoms'
+import { useMemo, useState } from 'react'
+import { UserPlus, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button, Tab } from '../../atoms'
 import { SearchInput, UserRow } from '../../molecules'
 import type { UserRowData } from '../../molecules'
-
-type UserTab = 'operators' | 'supervisors'
+import { cn } from '@/utils/cn'
 
 interface UserTableProps {
   users: UserRowData[]
-  activeTab: UserTab
-  onTabChange: (tab: UserTab) => void
-  onAddUser: () => void
+  tab: string
+  onTabChange: (tab: string) => void
+  searchQuery: string
+  onSearchChange: (q: string) => void
   onUserAction?: (id: string) => void
-  onSearch?: (query: string) => void
 }
 
 const columns = ['ID', 'Área', 'Legajo', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Acciones']
+const PAGE_SIZE = 5
 
 export function UserTable({
   users,
-  activeTab,
+  tab,
   onTabChange,
-  onAddUser,
+  searchQuery,
+  onSearchChange,
   onUserAction,
-  onSearch,
 }: UserTableProps) {
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const filteredUsers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+
+    if (!query) return users
+
+    return users.filter((user) => {
+      return [user.id, user.nombre, user.apellido, user.legajo].some((value) =>
+        value.toLowerCase().includes(query),
+      )
+    })
+  }, [users, searchQuery])
+
+  const totalUsers = filteredUsers.length
+  const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const pageUsers = filteredUsers.slice(
+    (safeCurrentPage - 1) * PAGE_SIZE,
+    safeCurrentPage * PAGE_SIZE,
+  )
+
+  const startItem = totalUsers === 0 ? 0 : (safeCurrentPage - 1) * PAGE_SIZE + 1
+  const endItem = Math.min(safeCurrentPage * PAGE_SIZE, totalUsers)
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
+
   return (
     <div className="flex flex-col gap-4">
       {/* Tabs + Add button */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-2">
-          {(['operators', 'supervisors'] as UserTab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => onTabChange(tab)}
-              className={[
-                'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-background text-surface-foreground hover:bg-surface-hover',
-              ].join(' ')}
+          {['Operadores', 'Supervisores'].map((tabLabel) => (
+            <Tab
+              key={tabLabel}
+              isActive={tab === tabLabel}
+              onClick={() => {
+                setCurrentPage(1)
+                onTabChange(tabLabel)
+              }}
+              className="text-foreground px-4 py-1.5"
             >
-              {tab === 'operators' ? 'Operadores' : 'Supervisores'}
-            </button>
+              {tabLabel}
+            </Tab>
           ))}
         </div>
-        <Button size="sm" onClick={onAddUser}>
+        <Button size="sm" type="button">
           <UserPlus size={14} />
           Agregar usuario
         </Button>
@@ -55,9 +82,13 @@ export function UserTable({
         <SearchInput
           placeholder="Buscar por ID, nombre o legajo..."
           className="max-w-xs"
-          onChange={(e) => onSearch?.(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => {
+            setCurrentPage(1)
+            onSearchChange(e.target.value)
+          }}
         />
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" type="button">
           <Filter size={14} />
           Filtros
         </Button>
@@ -79,7 +110,7 @@ export function UserTable({
             </tr>
           </thead>
           <tbody className="bg-background">
-            {users.length === 0 ? (
+            {pageUsers.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
@@ -89,7 +120,7 @@ export function UserTable({
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
+              pageUsers.map((user) => (
                 <UserRow key={user.id} user={user} onAction={onUserAction} />
               ))
             )}
@@ -97,10 +128,50 @@ export function UserTable({
         </table>
       </div>
 
-      {/* Pagination hint */}
-      <p className="text-xs text-surface-foreground">
-        Mostrando {users.length} usuarios
-      </p>
+      {/* Pagination */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-surface-foreground">
+          Mostrando {startItem} a {endItem} de {totalUsers} usuarios
+        </p>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label="Página anterior"
+            disabled={safeCurrentPage === 1}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            className="rounded-md p-1.5 text-surface-foreground hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {pageNumbers.map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => setCurrentPage(page)}
+              className={cn(
+                'min-w-8 rounded-md px-2 py-1 text-xs font-medium transition-colors',
+                safeCurrentPage === page
+                  ? 'bg-primary text-white'
+                  : 'text-surface-foreground hover:bg-surface-hover',
+              )}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            type="button"
+            aria-label="Página siguiente"
+            disabled={safeCurrentPage === totalPages}
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            className="rounded-md p-1.5 text-surface-foreground hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
