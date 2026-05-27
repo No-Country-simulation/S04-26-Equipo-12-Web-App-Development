@@ -70,3 +70,8 @@ rules:
     coverage_threshold: 0
   archive:
     - Warn before merging destructive deltas
+
+archived_changes:
+  - name: report-page-metrics
+    archived_at: "2026-05-27"
+    archive_path: "openspec/changes/archive/2026-05-27-report-page-metrics/"

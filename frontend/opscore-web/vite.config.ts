@@ -15,4 +15,7 @@ export default defineConfig({
       '@': '/src',
     },
   },
+  optimizeDeps: {
+    include: ['recharts'],
+  },
 })
