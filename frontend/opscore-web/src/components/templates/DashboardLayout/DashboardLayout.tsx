@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import { Sidebar, TopBar } from '@/components/organisms'
+import { Sidebar, TopBar, BottomNav } from '@/components/organisms'
 
 
 interface DashboardLayoutProps {
@@ -22,13 +22,16 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar userName={userName} userRole={userRole} />
+      <div className="hidden md:flex">
+        <Sidebar userName={userName} userRole={userRole} />
+      </div>
       <div className="flex flex-1 flex-col">
         <TopBar title={pageTitle} action={topBarAction} />
-        <main className="flex-1 overflow-y-auto px-6 py-5">
+        <main className="flex-1 overflow-y-auto px-6 py-5 pb-24 md:pb-5">
           {children}
         </main>
       </div>
+      <BottomNav userName={userName} userRole={userRole} />
     </div>
   )
 }
