@@ -3,7 +3,7 @@ from django.utils.timezone import now
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.mixins import (
     CreateModelMixin,
     ListModelMixin, 
@@ -14,6 +14,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.exceptions import ValidationError
 from apps.users.models import CustomUser
+from core.pagination import StandardResultsSetPagination
 from core.permissions import (
     IsAssignedToIncident,
     IsOperator,
@@ -72,6 +73,7 @@ class IncidentViewSet(
 
     filter_backends = [
         DjangoFilterBackend,
+        SearchFilter,
         OrderingFilter,
     ]
 
@@ -87,6 +89,13 @@ class IncidentViewSet(
     ordering = [
         "-created_at",
     ]
+
+    search_fields = [
+        "title",
+        "description",
+    ]
+
+    pagination_class = StandardResultsSetPagination
 
     http_method_names = [
         "get",
