@@ -3,6 +3,7 @@ import { UserPlus, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button, Tab } from '@/components/atoms'
 import { SearchInput, UserRow } from '@/components/molecules'
 import type { UserRowData } from '@/components/molecules'
+import { AddUserModal } from '@/features/users'
 import { cn } from '@/utils/cn'
 
 interface UserTableProps {
@@ -12,6 +13,7 @@ interface UserTableProps {
   searchQuery: string
   onSearchChange: (q: string) => void
   onUserAction?: (id: string) => void
+  onAddUser?: (data: Omit<UserRowData, 'id' | 'active'>, role: string) => void
 }
 
 const columns = ['ID', 'Área', 'Legajo', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Acciones']
@@ -24,8 +26,10 @@ export function UserTable({
   searchQuery,
   onSearchChange,
   onUserAction,
+  onAddUser,
 }: UserTableProps) {
   const [currentPage, setCurrentPage] = useState(1)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   const filteredUsers = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
@@ -71,7 +75,7 @@ export function UserTable({
             </Tab>
           ))}
         </div>
-        <Button size="sm" type="button">
+        <Button size="sm" type="button" onClick={() => setIsModalOpen(true)}>
           <UserPlus size={14} />
           Agregar usuario
         </Button>
@@ -172,6 +176,13 @@ export function UserTable({
           </button>
         </div>
       </div>
+
+      <AddUserModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        role={tab}
+        onSubmit={(data) => onAddUser?.(data, tab)}
+      />
     </div>
   )
 }
