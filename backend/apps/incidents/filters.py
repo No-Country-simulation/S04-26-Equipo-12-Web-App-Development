@@ -22,4 +22,6 @@ class IncidentFilter(django_filters.FilterSet):
             "priority",
             "area",
             "assigned_to",
+            "created_at__gte",
+            "created_at__lte",
         ]

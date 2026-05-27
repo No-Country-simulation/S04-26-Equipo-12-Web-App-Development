@@ -274,9 +274,6 @@ class IncidentViewSet(
         Transiciones permitidas:
         - OPEN -> IN_PROGRESS
         - IN_PROGRESS -> OPEN
-        - IN_PROGRESS -> CLOSED
-        - OPEN -> CLOSED
-        - CLOSED -> sin transiciones
         """
         incident = self.get_object()
 
