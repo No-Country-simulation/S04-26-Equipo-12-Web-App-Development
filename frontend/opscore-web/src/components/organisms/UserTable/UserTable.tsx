@@ -1,63 +1,116 @@
-import { UserPlus, Filter } from 'lucide-react'
-import { Button } from '../../atoms'
-import { SearchInput, UserRow } from '../../molecules'
-import type { UserRowData } from '../../molecules'
+import { useMemo, useState } from 'react'
+import { UserPlus, Filter, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Button, Tab } from '@/components/atoms'
+import { SearchInput, UserRow } from '@/components/molecules'
+import type { UserRowData } from '@/components/molecules'
+import { AddUserModal } from '@/features/users'
+import type { NewUserData } from '@/features/users/adapters'
+import { cn } from '@/utils/cn'
+import type { UserRole } from '@/types'
 
-type UserTab = 'operators' | 'supervisors'
+type UserTab = 'Operadores' | 'Supervisores'
+
+const TAB_ROLE_MAP: Record<UserTab, UserRole> = {
+  Operadores: 'OPERATOR',
+  Supervisores: 'SUPERVISOR',
+}
 
 interface UserTableProps {
   users: UserRowData[]
-  activeTab: UserTab
+  tab: UserTab
   onTabChange: (tab: UserTab) => void
-  onAddUser: () => void
+  searchQuery: string
+  onSearchChange: (q: string) => void
   onUserAction?: (id: string) => void
-  onSearch?: (query: string) => void
+  onAddUser?: (data: NewUserData, role: UserRole) => void
 }
 
 const columns = ['ID', 'Área', 'Legajo', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Acciones']
+const PAGE_SIZE = 5
 
 export function UserTable({
   users,
-  activeTab,
+  tab,
   onTabChange,
-  onAddUser,
+  searchQuery,
+  onSearchChange,
   onUserAction,
-  onSearch,
+  onAddUser,
 }: UserTableProps) {
+  const [currentPage, setCurrentPage] = useState(1)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const filteredUsers = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase()
+    const roleFilter = TAB_ROLE_MAP[tab]
+
+    return users
+      .filter((user) => user.role === roleFilter)
+      .filter((user) => {
+        if (!query) return true
+        return [user.id, user.nombre, user.apellido, user.legajo].some((value) =>
+          value.toLowerCase().includes(query),
+        )
+      })
+  }, [users, searchQuery, tab])
+
+  const totalUsers = filteredUsers.length
+  const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE))
+  const safeCurrentPage = Math.min(currentPage, totalPages)
+  const pageUsers = filteredUsers.slice(
+    (safeCurrentPage - 1) * PAGE_SIZE,
+    safeCurrentPage * PAGE_SIZE,
+  )
+
+  const startItem = totalUsers === 0 ? 0 : (safeCurrentPage - 1) * PAGE_SIZE + 1
+  const endItem = Math.min(safeCurrentPage * PAGE_SIZE, totalUsers)
+
+  const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
+
+  const tabs = Object.keys(TAB_ROLE_MAP) as UserTab[]
+
   return (
     <div className="flex flex-col gap-4">
       {/* Tabs + Add button */}
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div className="flex gap-2">
-          {(['operators', 'supervisors'] as UserTab[]).map((tab) => (
-            <button
-              key={tab}
-              onClick={() => onTabChange(tab)}
-              className={[
-                'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
-                activeTab === tab
-                  ? 'bg-primary text-white'
-                  : 'bg-surface-background text-surface-foreground hover:bg-surface-hover',
-              ].join(' ')}
+        <div className="flex gap-1 ring-2 ring-outline-variant rounded text-foreground">
+          {tabs.map((tabLabel) => (
+            <Tab
+              key={tabLabel}
+              isActive={tab === tabLabel}
+              onClick={() => {
+                setCurrentPage(1)
+                onTabChange(tabLabel)
+              }}
+              className="px-4 py-1.5"
             >
-              {tab === 'operators' ? 'Operadores' : 'Supervisores'}
-            </button>
+              {tabLabel}
+            </Tab>
           ))}
         </div>
-        <Button size="sm" onClick={onAddUser}>
+        <Button size="sm" type="button" onClick={() => setIsModalOpen(true)}>
           <UserPlus size={14} />
           Agregar usuario
         </Button>
       </div>
 
       {/* Search + Filters */}
-      <div className="flex items-center gap-3">
+      <div className="flex w-full justify-between items-center flex-wrap gap-3">
         <SearchInput
           placeholder="Buscar por ID, nombre o legajo..."
           className="max-w-xs"
-          onChange={(e) => onSearch?.(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => {
+            setCurrentPage(1)
+            onSearchChange(e.target.value)
+          }}
         />
-        <Button variant="ghost" size="sm">
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          className={cn('text-foreground ring-2 ring-outline-variant rounded', 'hover:bg-surface-hover')}
+        >
           <Filter size={14} />
           Filtros
         </Button>
@@ -79,7 +132,7 @@ export function UserTable({
             </tr>
           </thead>
           <tbody className="bg-background">
-            {users.length === 0 ? (
+            {pageUsers.length === 0 ? (
               <tr>
                 <td
                   colSpan={columns.length}
@@ -89,7 +142,7 @@ export function UserTable({
                 </td>
               </tr>
             ) : (
-              users.map((user) => (
+              pageUsers.map((user) => (
                 <UserRow key={user.id} user={user} onAction={onUserAction} />
               ))
             )}
@@ -97,10 +150,57 @@ export function UserTable({
         </table>
       </div>
 
-      {/* Pagination hint */}
-      <p className="text-xs text-surface-foreground">
-        Mostrando {users.length} usuarios
-      </p>
+      {/* Pagination */}
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <p className="text-xs text-surface-foreground">
+          Mostrando {startItem} a {endItem} de {totalUsers} usuarios
+        </p>
+
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            aria-label="Página anterior"
+            disabled={safeCurrentPage === 1}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+            className="rounded-md p-1.5 text-surface-foreground hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronLeft size={16} />
+          </button>
+
+          {pageNumbers.map((page) => (
+            <button
+              key={page}
+              type="button"
+              onClick={() => setCurrentPage(page)}
+              className={cn(
+                'min-w-8 rounded-md px-2 py-1 text-xs font-medium transition-colors',
+                safeCurrentPage === page
+                  ? 'bg-primary text-white'
+                  : 'text-surface-foreground hover:bg-surface-hover',
+              )}
+            >
+              {page}
+            </button>
+          ))}
+
+          <button
+            type="button"
+            aria-label="Página siguiente"
+            disabled={safeCurrentPage === totalPages}
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+            className="rounded-md p-1.5 text-surface-foreground hover:bg-surface-hover disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      </div>
+
+      <AddUserModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        role={TAB_ROLE_MAP[tab]}
+        onSubmit={(data) => onAddUser?.(data, TAB_ROLE_MAP[tab])}
+      />
     </div>
   )
 }

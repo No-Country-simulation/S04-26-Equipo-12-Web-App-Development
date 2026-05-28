@@ -1,6 +1,6 @@
 import { type ButtonHTMLAttributes } from 'react'
 import { type LucideIcon } from 'lucide-react'
-import { cn } from '../../../utils/cn'
+import { cn } from '@/utils/cn'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
 type Size = 'sm' | 'md' | 'lg'

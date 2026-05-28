@@ -1,4 +1,5 @@
 export { Sidebar } from './Sidebar'
+export { BottomNav } from './BottomNav'
 export { TopBar } from './TopBar'
 export { IncidentTable } from './IncidentTable'
 export { UserTable } from './UserTable'

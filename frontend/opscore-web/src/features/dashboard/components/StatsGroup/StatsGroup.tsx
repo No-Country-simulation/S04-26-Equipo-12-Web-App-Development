@@ -1,5 +1,5 @@
 import { StatCard } from '@/components/molecules/StatCard'
-import { CheckCircle, AlertCircle, TriangleAlert, Clock } from 'lucide-react'
+import { CheckCircle, TriangleAlert, Clock } from 'lucide-react'
 
 
 const statsData = [
