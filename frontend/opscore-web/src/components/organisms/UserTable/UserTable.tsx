@@ -4,16 +4,25 @@ import { Button, Tab } from '@/components/atoms'
 import { SearchInput, UserRow } from '@/components/molecules'
 import type { UserRowData } from '@/components/molecules'
 import { AddUserModal } from '@/features/users'
+import type { NewUserData } from '@/features/users/adapters'
 import { cn } from '@/utils/cn'
+import type { UserRole } from '@/types'
+
+type UserTab = 'Operadores' | 'Supervisores'
+
+const TAB_ROLE_MAP: Record<UserTab, UserRole> = {
+  Operadores: 'OPERATOR',
+  Supervisores: 'SUPERVISOR',
+}
 
 interface UserTableProps {
   users: UserRowData[]
-  tab: string
-  onTabChange: (tab: string) => void
+  tab: UserTab
+  onTabChange: (tab: UserTab) => void
   searchQuery: string
   onSearchChange: (q: string) => void
   onUserAction?: (id: string) => void
-  onAddUser?: (data: Omit<UserRowData, 'id' | 'active'>, role: string) => void
+  onAddUser?: (data: NewUserData, role: UserRole) => void
 }
 
 const columns = ['ID', 'Área', 'Legajo', 'Nombre', 'Apellido', 'Email', 'Teléfono', 'Acciones']
@@ -33,15 +42,17 @@ export function UserTable({
 
   const filteredUsers = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
+    const roleFilter = TAB_ROLE_MAP[tab]
 
-    if (!query) return users
-
-    return users.filter((user) => {
-      return [user.id, user.nombre, user.apellido, user.legajo].some((value) =>
-        value.toLowerCase().includes(query),
-      )
-    })
-  }, [users, searchQuery])
+    return users
+      .filter((user) => user.role === roleFilter)
+      .filter((user) => {
+        if (!query) return true
+        return [user.id, user.nombre, user.apellido, user.legajo].some((value) =>
+          value.toLowerCase().includes(query),
+        )
+      })
+  }, [users, searchQuery, tab])
 
   const totalUsers = filteredUsers.length
   const totalPages = Math.max(1, Math.ceil(totalUsers / PAGE_SIZE))
@@ -56,12 +67,14 @@ export function UserTable({
 
   const pageNumbers = Array.from({ length: totalPages }, (_, index) => index + 1)
 
+  const tabs = Object.keys(TAB_ROLE_MAP) as UserTab[]
+
   return (
     <div className="flex flex-col gap-4">
       {/* Tabs + Add button */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-1 ring-2 ring-outline-variant rounded text-foreground">
-          {['Operadores', 'Supervisores'].map((tabLabel) => (
+          {tabs.map((tabLabel) => (
             <Tab
               key={tabLabel}
               isActive={tab === tabLabel}
@@ -92,7 +105,12 @@ export function UserTable({
             onSearchChange(e.target.value)
           }}
         />
-        <Button variant="ghost" size="sm" type="button" className={cn('text-foreground ring-2 ring-outline-variant rounded', 'hover:bg-surface-hover')}>
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          className={cn('text-foreground ring-2 ring-outline-variant rounded', 'hover:bg-surface-hover')}
+        >
           <Filter size={14} />
           Filtros
         </Button>
@@ -180,8 +198,8 @@ export function UserTable({
       <AddUserModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        role={tab}
-        onSubmit={(data) => onAddUser?.(data, tab)}
+        role={TAB_ROLE_MAP[tab]}
+        onSubmit={(data) => onAddUser?.(data, TAB_ROLE_MAP[tab])}
       />
     </div>
   )

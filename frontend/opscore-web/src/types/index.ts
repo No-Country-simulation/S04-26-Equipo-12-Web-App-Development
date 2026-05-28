@@ -1,5 +1,7 @@
 export type BadgeVariant = 'critical' | 'warning' | 'resolved' | 'in-progress' | 'neutral'
 
+export type UserRole = 'OPERATOR' | 'SUPERVISOR' | 'MANAGER' | 'ADMIN'
+
 export interface Incident {
   id: string
   reportedAt: string // ISO date string

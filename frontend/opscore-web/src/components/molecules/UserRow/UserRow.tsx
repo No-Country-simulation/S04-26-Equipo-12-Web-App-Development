@@ -1,9 +1,11 @@
 import { MoreVertical } from 'lucide-react'
 import { Button } from '../../atoms'
 import { cn } from '@/utils/cn'
+import type { UserRole } from '@/types'
 
 export interface UserRowData {
   id: string
+  role: UserRole
   area: string
   legajo: string
   nombre: string

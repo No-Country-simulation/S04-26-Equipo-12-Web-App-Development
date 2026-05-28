@@ -2,15 +2,20 @@ import { useState } from 'react'
 import { Modal } from '@/components/atoms'
 import { Button, Input } from '@/components/atoms'
 import { FormField } from '@/components/molecules'
-import type { UserRowData } from '@/components/molecules'
-
-type NewUserData = Omit<UserRowData, 'id' | 'active'>
+import type { NewUserData } from '@/features/users/adapters'
+import type { UserRole } from '@/types'
 
 interface AddUserModalProps {
   isOpen: boolean
   onClose: () => void
-  role: 'Operadores' | 'Supervisores'
+  role: UserRole
   onSubmit: (data: NewUserData) => void
+}
+
+const ROLE_LABEL: Partial<Record<UserRole, string>> = {
+  OPERATOR: 'Operador',
+  SUPERVISOR: 'Supervisor',
+  MANAGER: 'Manager',
 }
 
 const EMPTY: NewUserData = {
@@ -19,6 +24,7 @@ const EMPTY: NewUserData = {
   nombre: '',
   apellido: '',
   email: '',
+  password: '',
   telefono: '',
 }
 
@@ -42,7 +48,7 @@ export function AddUserModal({ isOpen, onClose, role, onSubmit }: AddUserModalPr
     onClose()
   }
 
-  const roleLabel = role === 'Operadores' ? 'Operador' : 'Supervisor'
+  const roleLabel = ROLE_LABEL[role] ?? role
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title={`Agregar ${roleLabel}`}>
@@ -75,6 +81,17 @@ export function AddUserModal({ isOpen, onClose, role, onSubmit }: AddUserModalPr
             placeholder="juan.perez@opscore.com"
             value={form.email}
             onChange={handleChange('email')}
+            required
+          />
+        </FormField>
+
+        <FormField label="Contraseña" htmlFor="add-password" required>
+          <Input
+            id="add-password"
+            type="password"
+            placeholder="********"
+            value={form.password}
+            onChange={handleChange('password')}
             required
           />
         </FormField>
@@ -122,3 +139,4 @@ export function AddUserModal({ isOpen, onClose, role, onSubmit }: AddUserModalPr
     </Modal>
   )
 }
+

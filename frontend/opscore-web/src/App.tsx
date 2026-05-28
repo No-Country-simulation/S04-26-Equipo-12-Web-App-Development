@@ -6,6 +6,7 @@ import {
   ReportPage, 
   UserPage
 } from "@/pages";
+import { ProtectedRoute } from '@/components/templates'
 import { useTheme } from "@/utils/useTheme";
 
 
@@ -16,10 +17,14 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LoginPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/incidents" element={<IncidentPage />} />
-        <Route path="/reports" element={<ReportPage />} />
-        <Route path="/users" element={<UserPage />} />
+        <Route path="/login" element={<LoginPage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/incidents" element={<IncidentPage />} />
+          <Route path="/reports" element={<ReportPage />} />
+          <Route path="/users" element={<UserPage />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   );

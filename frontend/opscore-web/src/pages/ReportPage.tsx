@@ -11,13 +11,20 @@ import {
   useReportMetrics,
 } from '@/features/reports'
 import { useAuthStore } from '@/store'
-import type { ReportFilters } from '@/types'
+import type { ReportFilters, UserRole } from '@/types'
 
 export const ReportPage = () => {
   const pageTitle = 'Reportes'
   const [filters, setFilters] = useState<ReportFilters>({})
-  const role = useAuthStore((state) => state.role)
+  const role = useAuthStore((state) => state.user?.role ?? 'MANAGER')
   const { metrics, incidents, isLoading, isError } = useReportMetrics(filters)
+
+  const roleLabelByUserRole: Record<UserRole, string> = {
+    OPERATOR: 'Operador',
+    SUPERVISOR: 'Supervisor',
+    MANAGER: 'Manager',
+    ADMIN: 'Admin',
+  }
 
   const handleExportExcel = () => {
     exportToExcel(incidents)
@@ -29,7 +36,7 @@ export const ReportPage = () => {
   }
 
   return (
-    <DashboardLayout pageTitle={pageTitle} userName="John Doe" userRole={role}>
+    <DashboardLayout pageTitle={pageTitle} userName="John Doe" userRole={roleLabelByUserRole[role]}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-foreground">Reportes</h2>
@@ -60,7 +67,7 @@ export const ReportPage = () => {
           <>
             <MetricsSummary metrics={metrics} role={role} />
 
-            {role === 'Gerente' && (
+            {(role === 'MANAGER' || role === 'ADMIN') && (
               <section className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                 <IncidentsByAreaChart data={metrics.incidentsByArea} />
                 <RootCausesChart data={metrics.rootCauses} />

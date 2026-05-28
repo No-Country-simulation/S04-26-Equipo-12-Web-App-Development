@@ -1,10 +1,10 @@
 import { Clock, CircleAlert, Gauge, ShieldAlert } from 'lucide-react'
 import { StatCard } from '@/components/molecules'
-import type { BadgeVariant, ReportMetrics } from '@/types'
+import type { BadgeVariant, ReportMetrics, UserRole } from '@/types'
 
 interface MetricsSummaryProps {
   metrics: ReportMetrics
-  role: 'Supervisor' | 'Gerente'
+  role: UserRole
 }
 
 export const MetricsSummary = ({ metrics, role }: MetricsSummaryProps) => {
@@ -36,7 +36,7 @@ export const MetricsSummary = ({ metrics, role }: MetricsSummaryProps) => {
     },
   ]
 
-  if (role === 'Gerente') {
+  if (role === 'MANAGER' || role === 'ADMIN') {
     cards.push({
       title: 'Tasa de Resolución',
       value: `${metrics.resolutionRate.toFixed(1)}%`,

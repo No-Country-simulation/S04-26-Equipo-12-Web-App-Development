@@ -1,2 +1,2 @@
 export { useThemeStore } from './store'
-export { useAuthStore } from './authStore'
+export { useAuthStore, authStore } from './authStore'
