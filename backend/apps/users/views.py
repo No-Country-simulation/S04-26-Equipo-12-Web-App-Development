@@ -162,6 +162,7 @@ class UserViewSet(ModelViewSet):
 
         if self.action == 'list':
             if user.is_supervisor:
+                print('llega a supervisor')
                 # El supervisor solo puede ver y gestionar operarios.
                 return queryset.filter(role=CustomUser.Role.OPERATOR)
 
