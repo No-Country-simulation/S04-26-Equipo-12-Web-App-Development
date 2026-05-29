@@ -47,7 +47,7 @@ export const DashboardPage = () => {
   const pageTitle = "Dashboard de Supervisión"
 
   return (
-    <DashboardLayout pageTitle={pageTitle} userName="John Doe" userRole="Admin">
+    <DashboardLayout pageTitle={pageTitle}>
       <div className="flex flex-col gap-6">
         <StatsGroup />
         <div className="flex gap-4">

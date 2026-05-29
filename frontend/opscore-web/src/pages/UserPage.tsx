@@ -14,7 +14,7 @@ export const UserPage = () => {
   const pageTitle = "Usuarios"
 
   return (
-    <DashboardLayout pageTitle={pageTitle} userName="John Doe" userRole="Admin">
+    <DashboardLayout pageTitle={pageTitle}>
       {isLoading && (
         <p className="mb-4 text-sm text-surface-foreground">Cargando usuarios...</p>
       )}
