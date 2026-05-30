@@ -1,25 +1,22 @@
 import { type ReactNode } from 'react'
 import { Sidebar, TopBar, BottomNav } from '@/components/organisms'
-
+import { useAuthStore } from '@/store'
+import type { UserRole } from '@/types'
 
 interface DashboardLayoutProps {
   children: ReactNode
   pageTitle: string
-  userName: string
-  userRole: string
   topBarAction?: {
     label: string
     onClick: () => void
   }
 }
 
-export function DashboardLayout({
-  children,
-  pageTitle,
-  userName,
-  userRole,
-  topBarAction,
-}: DashboardLayoutProps) {
+export function DashboardLayout({ children, pageTitle, topBarAction }: DashboardLayoutProps) {
+  const user = useAuthStore((state) => state.user)
+  const userName = user?.full_name ?? ''
+  const userRole = (user?.role ?? 'OPERATOR') as UserRole
+
   return (
     <div className="flex min-h-screen bg-background">
       <div className="hidden md:flex">

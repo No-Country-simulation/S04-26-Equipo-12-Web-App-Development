@@ -36,7 +36,7 @@ export const ReportPage = () => {
   }
 
   return (
-    <DashboardLayout pageTitle={pageTitle} userName="John Doe" userRole={roleLabelByUserRole[role]}>
+    <DashboardLayout pageTitle={pageTitle}>
       <div className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="text-xl font-semibold text-foreground">Reportes</h2>

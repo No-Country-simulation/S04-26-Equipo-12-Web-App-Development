@@ -36,7 +36,7 @@ export const IncidentPage = () => {
   ]
 
   return (
-    <DashboardLayout pageTitle={pageTitle} userName="John Doe" userRole="Admin">
+    <DashboardLayout pageTitle={pageTitle}>
       <div className="flex flex-col gap-6">
         <div className="rounded-xl border border-outline-variant bg-surface-background p-6">
           <div className="flex items-start justify-between gap-4">

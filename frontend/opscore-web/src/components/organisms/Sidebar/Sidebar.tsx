@@ -2,20 +2,23 @@ import { LayoutDashboard, AlertCircle, BarChart2, Users } from 'lucide-react'
 import { NavItem } from '@/components/molecules'
 import { Avatar } from '@/components/atoms'
 import logo from '@/assets/opscore_logo.jpg'
+import type { UserRole } from '@/types'
 
 interface SidebarProps {
   userName: string
-  userRole: string
+  userRole: UserRole
 }
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { to: '/incidents', label: 'Incidentes', icon: AlertCircle },
-  { to: '/reports', label: 'Reportes', icon: BarChart2 },
-  { to: '/users', label: 'Usuarios', icon: Users },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['OPERATOR', 'SUPERVISOR', 'MANAGER', 'ADMIN'] as UserRole[] },
+  { to: '/incidents', label: 'Incidentes', icon: AlertCircle, roles: ['OPERATOR', 'SUPERVISOR', 'MANAGER', 'ADMIN'] as UserRole[] },
+  { to: '/reports', label: 'Reportes', icon: BarChart2, roles: ['SUPERVISOR', 'MANAGER', 'ADMIN'] as UserRole[] },
+  { to: '/users', label: 'Usuarios', icon: Users, roles: ['SUPERVISOR', 'MANAGER', 'ADMIN'] as UserRole[] },
 ]
 
 export function Sidebar({ userName, userRole }: SidebarProps) {
+  const visibleItems = navItems.filter((item) => item.roles.includes(userRole))
+
   return (
     <aside className="flex min-h-screen w-[200px] flex-col bg-surface-background border-r border-outline-variant">
       {/* Brand */}
@@ -29,7 +32,7 @@ export function Sidebar({ userName, userRole }: SidebarProps) {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 flex flex-col gap-1">
-        {navItems.map((item) => (
+        {visibleItems.map((item) => (
           <NavItem key={item.to} {...item} />
         ))}
       </nav>
